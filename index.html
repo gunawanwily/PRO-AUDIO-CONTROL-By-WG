@@ -846,7 +846,10 @@ for(let i=0;i<15;i++){
 // Keyboard hotkeys: 1–9 = Pads 1–9, 0 = Pad 10, Q/W/E/R/T = Pads 11–15.
 document.addEventListener('keydown',e=>{
   const tag=(e.target?.tagName||'').toLowerCase();
-  if(e.ctrlKey||e.altKey||e.metaKey||['input','textarea','select','button'].includes(tag)||e.target?.isContentEditable)return;
+  // Shortcuts are global on desktop/laptop. Only text/form editing areas
+  // suppress them; clicking a Pad, button, Music Player, Notes, etc. must
+  // never be required before 1–9 / 0 / Q–T can trigger a Pad.
+  if(e.ctrlKey||e.altKey||e.metaKey||['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;
   if(e.repeat)return;
   const k=(e.key||'').toLowerCase(); const i=shortcutKeys.indexOf(k);
   if(i>=0&&i<15){e.preventDefault(); triggerPadShortcut(i);}
@@ -1029,47 +1032,7 @@ function clearAllPads(){
 }
 $('clearAllPads').onclick=clearAllPads;
 
-$('masterFadeBtn').onclick=()=>{
-  if(masterFadeRunning)return;
-  const active=pads.filter(p=>p&&p.audio&&(!p.audio.paused||fadeJobs.has(p.audio)));
-  if(!active.length)return;
-  masterFadeRunning=true;
-  $('masterFadeBtn').classList.add('active');
-  const dur=Math.max(80,Number(fadeDuration)||1000);
-  // Take exclusive control of the active pads for this master fade so an
-  // older per-pad fade cannot fight the master fade animation.
-  active.forEach(p=>cancelFade(p.audio));
-  const starts=active.map(p=>getMediaGain(p.audio));
-  const t0=performance.now();
-  function step(t){
-    const q=Math.min(1,(t-t0)/dur);
-    active.forEach((p,i)=>{
-      const a=p.audio;
-      // Fade the actual Web Audio gain used by the V26 audio engine.
-      // Do not use HTMLMediaElement.volume here because setMediaGain()
-      // keeps that property at 1 when the analyser/gain path is active.
-      if(a) setMediaGain(a,starts[i]*(1-q));
-      updatePad(pads.indexOf(p));
-    });
-    if(q<1){
-      requestAnimationFrame(step);
-      return;
-    }
-    active.forEach(p=>{
-      const a=p.audio;
-      if(!a)return;
-      cancelFade(a);
-      setMediaGain(a,0);
-      a.pause();
-      try{a.currentTime=0}catch(e){}
-      setMediaGain(a,targetPadVolume(pads.indexOf(p)));
-      updatePad(pads.indexOf(p));
-    });
-    masterFadeRunning=false;
-    $('masterFadeBtn').classList.remove('active');
-  }
-  requestAnimationFrame(step);
-};
+$('masterFadeBtn').onclick=()=>{if(masterFadeRunning)return;const active=pads.filter(p=>!p.audio.paused);if(!active.length)return;masterFadeRunning=true;$('masterFadeBtn').classList.add('active');const starts=active.map(p=>p.audio.volume),t0=performance.now();function step(t){const q=Math.min(1,(t-t0)/Math.max(50,masterFadeSeconds*1000));active.forEach((p,i)=>p.audio.volume=starts[i]*(1-q));if(q<1)requestAnimationFrame(step);else{active.forEach(p=>{p.audio.pause();try{p.audio.currentTime=0}catch(e){}});applyVolumes();masterFadeRunning=false;$('masterFadeBtn').classList.remove('active')}}requestAnimationFrame(step)};
 $('stopAll').onclick=()=>{pads.forEach((p,i)=>{cancelFade(p.audio);p.audio.pause();try{p.audio.currentTime=0}catch(e){}});music.pause();try{music.currentTime=0}catch(e){};applyVolumes()};
 $('muteAll').onclick=()=>{muted=!muted;applyVolumes();$('muteAll').textContent=muted?'🔊 UNMUTE':'🔇 MUTE';$('muteAll').classList.toggle('muted',muted)};
 $('topStopAll').onclick=()=>$('stopAll').click(); $('topMute').onclick=()=>$('muteAll').click();
