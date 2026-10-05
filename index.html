@@ -355,6 +355,7 @@ const padColors=['#0ea5ff','#7b3cff','#00d99a','#12d8ff','#ff8618','#ff2380','#9
 const padNames=['Jingle Opening','Backing Track 01','Crowd Ambience','Siren','Applause','Sweep Down','Stinger','Laser','Kickbeat','Snare','Promo Video','Background Music','Effect 01','Effect 02','Instrumental'];
 const pads=[];
 const shortcutKeys=['1','2','3','4','5','6','7','8','9','0','q','w','e','r','t'];
+const shortcutSpaceKey=' ';
 let allPadsLocked=false, lastPlayedIndex=-1;
 const padLocks=Array(15).fill(false);
 function setLastPlayed(i){lastPlayedIndex=i;const el=$('lastPlayedText');if(el)el.textContent='PAD '+(i+1)+' • '+($('name'+i)?.textContent||'Audio');}
@@ -362,7 +363,12 @@ function updatePadLockUI(i){const locked=allPadsLocked||padLocks[i];const pad=$(
 function setAllPadLock(v){allPadsLocked=v;for(let i=0;i<15;i++)updatePadLockUI(i);const b=$('lockAllPads');if(b){b.classList.toggle('active',v);b.setAttribute('aria-pressed',String(v));const t=b.querySelector('.lockText');if(t)t.textContent=v?'LOCKED':'LOCK EDIT';}}
 function updateActivePads(){const list=$('activePadsList'),count=$('activePadsCount');if(!list||!count)return;const active=pads.map((p,i)=>({p,i})).filter(x=>x.p&&x.p.audio&&(!x.p.audio.paused||fadeJobs.has(x.p.audio)));count.textContent=String(active.length);list.innerHTML=active.length?active.map(({i})=>{const name=escapeHtml($('name'+i)?.textContent||'Audio');return `<span class="activePadChip" title="PAD ${i+1}"><span class="activePadText" data-full="PAD ${i+1} · ${name}">PAD ${i+1} · ${name}</span></span>`}).join(''):'<span class="activePadsEmpty">Tidak ada pad yang aktif</span>';requestAnimationFrame(()=>{list.querySelectorAll('.activePadText').forEach(el=>{if(el.scrollWidth>el.clientWidth){el.classList.add('running');el.style.setProperty('--marquee-shift',(el.scrollWidth-el.clientWidth)+'px');}});});}
 function renderShortcutCard(){}
-function triggerPadShortcut(i){ if(Number.isInteger(i)&&pads[i]&&!padLocks[i]) playPadWithCrossfade(i); }
+function triggerPadShortcut(i){
+  // Keyboard operation intentionally bypasses LOCK ALL. Only an individual
+  // Pad lock blocks its own shortcut, so LOCK ALL can protect against mouse/touch
+  // mistakes without disabling the operator's keyboard cues.
+  if(Number.isInteger(i)&&pads[i]&&!padLocks[i]) playPadWithCrossfade(i);
+}
 let masterGain=.7, muted=false, fadeDuration=1500, masterFadeRunning=false;
 function fmt(s){if(!Number.isFinite(s)||s<0)s=0;return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')}
 function status(msg){const e=$('playbackStatus');if(!e)return;e.textContent=msg||'';e.style.display=msg?'block':'none';e.style.cssText=msg?'position:relative;z-index:30;display:block;font-size:12px;color:#ffd0d0;padding:6px 10px;background:#35131a;border-bottom:1px solid #7b303b':'position:relative;z-index:2;display:none'}
@@ -852,10 +858,24 @@ function handleGlobalPadShortcut(e){
   if(e.ctrlKey||e.altKey||e.metaKey||['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;
   if(e.repeat)return;
   const k=(e.key||'').toLowerCase();
+  if(k===shortcutSpaceKey){
+    e.preventDefault(); e.stopPropagation();
+    // SPACE is a global operator command: STOP ALL / FADE ALL.
+    // It intentionally works even while LOCK ALL is active.
+    const active=pads.some(p=>p?.audio&&!p.audio.paused) || masterFadeRunning;
+    if(active){
+      if(masterFadeRunning){ $('stopAll')?.click(); }
+      else { $('masterFadeBtn')?.click(); }
+    } else {
+      $('stopAll')?.click();
+    }
+    return;
+  }
   const i=shortcutKeys.indexOf(k);
   if(i>=0&&i<15){e.preventDefault();e.stopPropagation();triggerPadShortcut(i);}
 }
-window.addEventListener('keydown',handleGlobalPadShortcut,true);
+// Capture in the window phase so GitHub Pages / embedded controls cannot steal focus.
+window.addEventListener('keydown',handleGlobalPadShortcut,{capture:true,passive:false});
 $('lockAllPads').onclick=()=>setAllPadLock(!allPadsLocked);
 let tracks=[],cur=-1;const music=makeAudio('Music Player');music.volume=.7;
 let dragFrom=-1;
