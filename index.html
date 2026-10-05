@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PRO AUDIO">
-<title>PRO-AUDIO-CONTROL • V26 • ACTIVE PADS</title>
+<title>PRO-AUDIO-CONTROL • V28 • GLOBAL SHORTCUT LOCK BYPASS</title>
 <style>
 :root{--bg:#03101c;--panel:#071a2b;--panel2:#0a2135;--line:#12364f;--text:#eef7ff;--muted:#89a8bd;--blue:#0ea5ff;--cyan:#12d8ff;--green:#00df8a;--purple:#9b4dff;--pink:#ff2380;--orange:#ff8618}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 30% 0,#0a2940 0,#03101c 38%,#020b14 100%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
@@ -20,7 +20,7 @@ button,input{font:inherit}button{border:0;color:#fff;cursor:pointer}.app{min-hei
 .topbar{height:64px;display:flex;align-items:center;gap:18px;padding:0 20px;border-bottom:1px solid #163850;background:rgba(3,16,28,.92);box-shadow:0 4px 25px #0008;position:sticky;top:0;z-index:20}
 .logo{font-size:23px;font-weight:900;letter-spacing:.3px}.logo b{color:var(--blue)}.sub{font-size:13px;letter-spacing:1.2px;color:#78a9c7;border-left:1px solid #2b526b;padding-left:18px}.clock{margin-left:auto;text-align:right;color:#dbeeff;font-weight:700}.clock small{display:block;color:#7194aa;font-weight:500;font-size:10px;margin-top:2px}
 /* Keyboard shortcuts are desktop-only and have no on-screen shortcut card. */
-.operatorBar{display:flex;align-items:center;gap:10px;margin:0 12px 2px;padding:7px 9px;background:linear-gradient(180deg,#071c2d,#04121e);border:1px solid #163f58;border-radius:8px;box-shadow:0 4px 16px #0005;min-height:42px}.lockGroup,.lastPlayed,.activePadsStatus{display:flex;align-items:center;gap:5px}.shortcutInfo{display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid #183b52;color:#9bb8ca}.shortcutInfo b{display:block;font-size:8px;color:#dff7ff;letter-spacing:.5px}.shortcutInfo small{display:block;font-size:7px;color:#6f96aa;margin-top:2px}.shortcutKeyBadge{width:26px;height:26px;border:1px solid #28536b;border-radius:6px;display:grid;place-items:center;color:#12d8ff;background:#0b2435;font-size:13px}.barLabel,.lastPlayed span,.activePadsLabel{font-size:8px;font-weight:900;color:#7fa9bd;letter-spacing:.7px}.activePadsStatus{min-width:0;flex:1;overflow:hidden;padding-left:10px;border-left:1px solid #183b52}.activePadsCount{font-size:9px;font-weight:900;color:#dff7ff;white-space:nowrap}.activePadsList{display:flex;gap:5px;overflow-x:auto;scrollbar-width:thin;min-width:0}.activePadChip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #24566d;border-radius:7px;background:#09283a;color:#ccebf6;white-space:nowrap;font-size:8px;font-weight:800}.activePadChip::before{content:"";width:6px;height:6px;border-radius:50%;background:#00e59a;box-shadow:0 0 7px #00e59a}.activePadsEmpty{font-size:8px;color:#66899b;white-space:nowrap}
+.operatorBar{display:flex;align-items:center;gap:10px;margin:0 12px 2px;padding:7px 9px;background:linear-gradient(180deg,#071c2d,#04121e);border:1px solid #163f58;border-radius:8px;box-shadow:0 4px 16px #0005;min-height:46px}.lockGroup,.lastPlayed,.activePadsStatus{display:flex;align-items:center;gap:5px}.shortcutInfo{display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid #183b52;color:#9bb8ca}.shortcutInfo b{display:block;font-size:8px;color:#dff7ff;letter-spacing:.5px}.shortcutInfo small{display:block;font-size:7px;color:#6f96aa;margin-top:2px}.shortcutKeyBadge{width:26px;height:26px;border:1px solid #28536b;border-radius:6px;display:grid;place-items:center;color:#12d8ff;background:#0b2435;font-size:13px}.barLabel,.lastPlayed span,.activePadsLabel{font-size:11px;font-weight:900;color:#8fc9df;letter-spacing:.8px}.activePadsStatus{min-width:0;flex:1;overflow:hidden;padding-left:12px;border-left:1px solid #183b52;gap:8px}.activePadsCount{font-size:13px;font-weight:1000;color:#eaffff;white-space:nowrap;text-shadow:0 0 8px #12d8ff66}.activePadsList{display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin;min-width:0;padding:2px 0}.activePadChip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #2c7898;border-radius:8px;background:linear-gradient(180deg,#0b3146,#082334);color:#effcff;white-space:nowrap;font-size:11px;font-weight:900;min-height:30px;box-shadow:0 0 10px #12d8ff18}.activePadChip::before{content:"";width:8px;height:8px;border-radius:50%;background:#00f0a0;box-shadow:0 0 9px #00f0a0}.activePadsEmpty{font-size:10px;color:#7198ab;white-space:nowrap}
 .activePadsList{position:relative}
 .activePadChip{font-weight:900;max-width:240px;overflow:hidden}
 .activePadChip .activePadText{display:block;overflow:hidden;white-space:nowrap;min-width:0;font-weight:900}
@@ -362,7 +362,7 @@ function updatePadLockUI(i){const locked=allPadsLocked||padLocks[i];const pad=$(
 function setAllPadLock(v){allPadsLocked=v;for(let i=0;i<15;i++)updatePadLockUI(i);const b=$('lockAllPads');if(b){b.classList.toggle('active',v);b.setAttribute('aria-pressed',String(v));const t=b.querySelector('.lockText');if(t)t.textContent=v?'LOCKED':'LOCK EDIT';}}
 function updateActivePads(){const list=$('activePadsList'),count=$('activePadsCount');if(!list||!count)return;const active=pads.map((p,i)=>({p,i})).filter(x=>x.p&&x.p.audio&&(!x.p.audio.paused||fadeJobs.has(x.p.audio)));count.textContent=String(active.length);list.innerHTML=active.length?active.map(({i})=>{const name=escapeHtml($('name'+i)?.textContent||'Audio');return `<span class="activePadChip" title="PAD ${i+1}"><span class="activePadText" data-full="PAD ${i+1} · ${name}">PAD ${i+1} · ${name}</span></span>`}).join(''):'<span class="activePadsEmpty">Tidak ada pad yang aktif</span>';requestAnimationFrame(()=>{list.querySelectorAll('.activePadText').forEach(el=>{if(el.scrollWidth>el.clientWidth){el.classList.add('running');el.style.setProperty('--marquee-shift',(el.scrollWidth-el.clientWidth)+'px');}});});}
 function renderShortcutCard(){}
-function triggerPadShortcut(i){ if(Number.isInteger(i)&&pads[i]&&!allPadsLocked&&!padLocks[i]) playPadWithCrossfade(i); }
+function triggerPadShortcut(i){ if(Number.isInteger(i)&&pads[i]&&!padLocks[i]) playPadWithCrossfade(i); }
 let masterGain=.7, muted=false, fadeDuration=1500, masterFadeRunning=false;
 function fmt(s){if(!Number.isFinite(s)||s<0)s=0;return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')}
 function status(msg){const e=$('playbackStatus');if(!e)return;e.textContent=msg||'';e.style.display=msg?'block':'none';e.style.cssText=msg?'position:relative;z-index:30;display:block;font-size:12px;color:#ffd0d0;padding:6px 10px;background:#35131a;border-bottom:1px solid #7b303b':'position:relative;z-index:2;display:none'}
@@ -844,16 +844,18 @@ for(let i=0;i<15;i++){
   updatePad(i);
 }
 // Keyboard hotkeys: 1–9 = Pads 1–9, 0 = Pad 10, Q/W/E/R/T = Pads 11–15.
-document.addEventListener('keydown',e=>{
+// Capture at window level so focus on FADE TIME buttons, other controls, or
+// any non-text UI never steals the shortcut. Shortcuts also bypass LOCK ALL
+// (operator trigger remains available), while an individually locked Pad stays protected.
+function handleGlobalPadShortcut(e){
   const tag=(e.target?.tagName||'').toLowerCase();
-  // Shortcuts are global on desktop/laptop. Only text/form editing areas
-  // suppress them; clicking a Pad, button, Music Player, Notes, etc. must
-  // never be required before 1–9 / 0 / Q–T can trigger a Pad.
   if(e.ctrlKey||e.altKey||e.metaKey||['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;
   if(e.repeat)return;
-  const k=(e.key||'').toLowerCase(); const i=shortcutKeys.indexOf(k);
-  if(i>=0&&i<15){e.preventDefault(); triggerPadShortcut(i);}
-});
+  const k=(e.key||'').toLowerCase();
+  const i=shortcutKeys.indexOf(k);
+  if(i>=0&&i<15){e.preventDefault();e.stopPropagation();triggerPadShortcut(i);}
+}
+window.addEventListener('keydown',handleGlobalPadShortcut,true);
 $('lockAllPads').onclick=()=>setAllPadLock(!allPadsLocked);
 let tracks=[],cur=-1;const music=makeAudio('Music Player');music.volume=.7;
 let dragFrom=-1;
